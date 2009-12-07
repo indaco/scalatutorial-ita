@@ -1,0 +1,68 @@
+\section{Tutto \`e un oggetto}
+\label{sec:everything-an-object}
+
+\Scala \`e un puro linguaggio object-oriented nel senso che \emph{ogni cosa} \`e un oggetto, inclusi i numeri e le funzioni. In questo differisce da \Java, che invece distingue tra tipi primitivi (come \code{boolean} e \code{Int}) e tipi referenziati e non permette la manipolazione di funzioni come valori.
+
+\subsection{I numeri sono oggetti}
+\label{sec:numbers-are-objects}
+
+Dato che i numeri sono oggetti, possiedono dei metodi, infatti, un'espressione aritmetica come la seguente:
+\begin{lstlisting}
+1 + 2 * 3 / x
+\end{lstlisting}
+consiste esclusivamente di chiamate a metodi, perch\'e \`e equivalente alla seguente espressione:
+\begin{lstlisting}
+(1).+(((2).*(3))./(x))
+\end{lstlisting}
+Questo significa anche che \code{+}, \code{*}, etc. sono identificatori validi in \Scala.
+
+Le parentesi intorno ai numeri nella seconda versione sono necessarie perch\'e 
+\newline l'analizzatore lessicale di Scala usa le regole di match pi\`u lunghe per i token, quindi, dovrebbe dividere la seguente espressione:
+\begin{lstlisting}
+1.+(2)
+\end{lstlisting}
+nei token \code{1.}, \code{+} e \code{2}. La ragione per cui si \`e scelto questo tipo di assegnazione di significato \`e perch\'e \code{1.} \`e un match pi\`u lungo e valido di \code{1}. Il token \code{1.} \`e interpretato come \code{1.0} rendendolo un \code{Double} e non pi\`u un \code{Int}. Scrivendo l'espressione come:
+\begin{lstlisting}
+(1).+(2)
+\end{lstlisting}
+si evita che \code{1} possa esser considerato come un \code{Double}.
+
+\subsection{Le funzioni sono oggetti}
+\label{sec:funct-are-objects}
+
+Forse per i programmatori \Java \`e pi\`u sorprendente scoprire che in \Scala anche le funzioni sono oggetti. Quindi \`e possibile passare le funzioni come argomenti, memorizzarle in variabili e ritornarle da altre funzioni. \Scala distingue le funzioni dai metodi che non possono essere trattati come valori. L'abilit\`a  a manipolare le funzioni come valori \`e uno dei punti cardini di un interessante paradigma di programmazione chiamato \emph{programmazione funzionale}.
+
+Come esempio semplice del perch\'e pu\`o risultare utile usare le funzioni come valori consideriamo una funzione timer che deve eseguire delle azione ogni secondo. Come specifichiamo l'azione da eseguire? Logicamente, come una funzione. Questo tipo di passaggio di funzione \`e familiare a molti programmatori: viene spesso usato nel codice delle user-interface, per registrare le funzioni di call-back che vengono richiamate quando un evento \`e in essere.
+
+Nel successivo programma, la funzione timer \`e chiamata \code{oncePerSecond} e prende come argomento una funzione di call-back. Il tipo di questa funzione \`e scritto come \verb|() => Unit| che \`e il tipo di tutte le funzioni che non prendono nessun argomento e non restituiscono niente (il tipo \code{Unit} \`e simile al \code{void} del C/C++). La funzione principale di questo programma \`e quella di chiamare la funzione timer con una call-back che stampa una frase sul terminale. In altre parole questo programma stampa la frase ``time flies like an arrow'' ogni secondo.
+\begin{lstlisting}
+object Timer {
+  def oncePerSecond(callback: () => Unit) {
+    while (true) { callback(); Thread sleep 1000 }
+  }
+  def timeFlies() {
+    println("time flies like an arrow...")
+  }
+  def main(args: Array[String]) {
+    oncePerSecond(timeFlies)
+  }
+}
+\end{lstlisting}
+Notare che per stampare la stringa, usiamo il metodo predefinito \code{println} invece di quelli inclusi in \code{System.out}.
+
+\subsubsection{Funzioni anonime}
+\label{sec:anonymous-functions}
+
+Il codice precedente \`e semplice da capire e possiamo raffinarlo ancora un po'. Notiamo preliminarmente che la funzione \code{timeFlies} necessita di esser definita solo per esser passata come argomento alla funzione \code{oncePerSecond}. Nominare esplicitamente una funzione con queste caratteristiche non \`e necessario. \`E pi\`u interessante costruire detta funzione nel momento in cui viene passata come argomento a \code{oncePerSecond}. Questo \`e possibile in \Scala usando le funzioni anonime, che sono esattamente funzioni senza nome. La versione rivista del nostro programma timer usa una funzione anonima invece di \code{timeFlies} e appare come di seguito:
+\begin{lstlisting}
+object TimerAnonymous {
+  def oncePerSecond(callback: () => Unit) {
+    while (true) { callback(); Thread sleep 1000 }
+  }
+  def main(args: Array[String]) {
+    oncePerSecond(() =>
+      println("time flies like an arrow..."))
+  }
+}
+\end{lstlisting}
+La presenza delle funzioni anonime in questo esempio \`e rivelata dal simbolo `\verb|=>|' che separa la lista degli argomenti della funzione dal suo corpo. In questo esempio, la lista degli argomenti \`e vuota, di fatti la coppia di parentesi sulla sinistra di => \`e vuota.Il corpo della funzione \`e lo stesso del precedente \code{timeFlies}.

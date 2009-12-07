@@ -1,0 +1,55 @@
+%% $Id: $
+
+\documentclass[a4paper,12pt,twoside,titlepage]{article}
+
+\usepackage{scaladoc}
+\usepackage{fleqn}
+\usepackage{modefs}
+\usepackage{math}
+\usepackage{scaladefs}
+\usepackage{xspace}
+
+\usepackage[italian]{babel}
+\hyphenation{e-sem-pio in-di-spen-sa-bi-le chia-ma-to ri-chie-de-re a-strat-ta va-lo-re se-gna-la-re o-pe-ra-zio-ne se-con-do do-cu-men-to pro-ble-mi va-ria-bi-li pre-di-ca-ti}
+
+\ifpdf
+    \pdfinfo {
+        /Author   (Michel Schinz, Philipp Haller, Mirco Veltri (trad.))
+        /Title    (A Scala Tutorial)
+        /Keywords (Scala programming language tutorial)
+        /Subject  (Introduzione di base a Scala, per programmatori Java)
+        /Creator  (TeX)
+        /Producer (PDFLaTeX)
+    }
+\fi
+
+\renewcommand{\doctitle}{Un tutorial su Scala \\
+\large  per programmatori Java \ }
+\renewcommand{\docsubtitle}{Version 0.8}
+\renewcommand{\docauthor}{Michel Schinz\\*Philipp Haller\\*Mirco Veltri (trad.)\\[61mm]}
+
+\newcommand{\langname}[1]{#1\xspace}
+
+\newcommand{\Scala}{\langname{Scala}}
+\newcommand{\Java}{\langname{Java}}
+
+\newcommand{\toolname}[1]{\texttt{#1}\xspace}
+
+\newcommand{\scalac}{\toolname{scalac}}
+\newcommand{\scala}{\toolname{scala}}
+\newcommand{\java}{\toolname{java}}
+
+\begin{document}
+\makedoctitle
+
+\input{sec1} % Introduction
+\input{sec2} % A first example
+\input{sec3} % Intercation with Java
+\input{sec4} % Evetything is an object
+\input{sec5} % Classes
+\input{sec6} % Case classes and pattern matching
+\input{sec7} % Traits
+\input{sec8} % Genericity
+\input{sec9} % Conclusion
+
+\end{document}

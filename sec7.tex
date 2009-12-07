@@ -1,0 +1,60 @@
+\section{Trait}
+\label{sec:traits}
+
+Una classe in \Scala oltre che poter ereditare da una super-classe pu\`o anche importare del codice da uno o diversi \emph{trait}.
+
+Probabilmente per i programmatori \Java il modo pi\`u semplice per capire cosa sono i trait \`e concepirli come interfacce che anche la capacit\`a di contenere del codice. In \Scala, quando una classe eredita da un trait ne implementa la relativa interfaccia ed eredita tutto il codice contenuto nel trait.
+
+Per comprendere a pieno l'utilit\`a  dei trait, osserviamo un classico esempio:
+oggetti ordinati. Si rivela spesso utile riuscire a confrontare oggetti di una data classe con se stessi, ad esempio per ordinarli. In \Java gli oggetti confrontabili implementano l'interfaccia \code{Comparable}. In \Scala possiamo fare qualcosa di meglio che in \Java, definendo l'equivalente codice di \code{Comparable} come un trait, che chiamiamo \code{Ord}.
+
+Sei differenti predicati possono essere utili per confrontare gli oggetti: minore, minore o uguale, uguale, diverso, maggiore o uguale e maggiore. Tuttavia, definirli tutti \`e noioso, specialmente perch\'e 4 di essi sono esprimibili con gli altri due. Per esempio dati i predicati di uguale e minore, \`e possibile esprimere gli altri. in \Scala tutte queste osservazioni possono essere piacevolemente inclusi nella seguente \newline dichiarazione di un trait:
+\begin{lstlisting}
+trait Ord {
+  def < (that: Any): Boolean
+  def <=(that: Any): Boolean = (this < that) || (this == that)
+  def > (that: Any): Boolean = !(this <= that)
+  def >=(that: Any): Boolean = !(this < that)
+} 
+\end{lstlisting}
+Questa definizione crea un nuovo tipo chiamato \code{Ord}, che ha lo stesso ruolo dell'interfaccia \code{Comparable} in \Java e fornisce l'implementazione di default di tre predicati in termini del quarto, astraendone uno. I predicati di uguaglianza e disuguaglianza non sono presenti in questa dichiarazione in quanto sono presenti di default in tutti gli oggetti.
+
+Il tipo \code{Any} usato precedentemente \`e il super-tipo dati di tutti gli altri tipi in \Scala. Pu\`o esser visto come una versione generica del tipo \code{Object} in \Java, dato che \`e altres\`i il super-tipo dei tipi base come \code{Int}, \code{Float}, etc.
+
+Per rendere confrontabili gli oggetti di una classe, \`e quindi sufficiente definire i predicati con cui testare uguaglianza ed inferiorit\`a, unire la precedente classe \code{Ord}. Come esempio, definiamo una classe \code{Date} che rappresenti le date nel calendario Gregoriano. Tali date sono composte dal giorno, dal mese e dall'anno che rappresenteremo tutti con interi. Iniziamo definendo la classe \code{Date} come segue:
+\begin{lstlisting}
+class Date(y: Int, m: Int, d: Int) extends Ord {
+  def year = y
+  def month = m
+  def day = d
+
+  override def toString(): String = year + "-" + month + "-" + day
+\end{lstlisting}
+La parte importante qui \`e la dichiarazione \code{extends Ord} che segue il nome della classe e dei parametri. Dichiara che la classe \code{Date} eredita il codice dal trait \code{Ord}.
+
+Successivamente ridefiniamo il metodo \code{equals}, ereditato da \code{Object}, in modo tale che possa confrontare in modo corretto le date confrontando i singoli campi. L'implementazione di default del metodo \code{equal} non \`e utilizzabile perch\'e come in \Java confronta fisicamente gli oggetti. Arriviamo alla seguente definizione:
+\begin{lstlisting}
+  override def equals(that: Any): Boolean =
+    that.isInstanceOf[Date] && {
+      val o = that.asInstanceOf[Date]
+      o.day == day && o.month == month && o.year == year
+    }
+\end{lstlisting}
+\code{equals} fa uso di due metodi predefiniti \code{isInstanceOf} e \code{asInstanceOf}. Il primo, \code{isInstanceOf}, corrisponde all'operatore \code{instanceof} di \Java e restituisce true se e solo se l'oggetto su cui \`e applicato \`e una istanza del tipo dati. Il secondo, \code{asInstanceOf}, corrisponde all'operatore di cast on \Java: se l'oggetto \`e una istanza del tipo dati \`e visto come tale altrimenti viene sollevata un'eccezione \newline \code{ClassCastException}.
+
+Infine, l'ultimo metodo da definire \`e il predicato che testa la condizione di minoranza. Fa uso di un altro metodo predefinito, \code{error}, che solleva una eccezione con il messaggio di errore dato.
+\begin{lstlisting}
+  def <(that: Any): Boolean = {
+    if (!that.isInstanceOf[Date])
+      error("cannot compare " + that + " and a Date")
+
+    val o = that.asInstanceOf[Date]
+    (year < o.year) ||
+    (year == o.year && (month < o.month ||
+                       (month == o.month && day < o.day)))
+  }
+\end{lstlisting}
+Questo completa la definizione della classe \code{Date}. Istanze di questa classe possono esser viste sia come date che come oggetti confrontabili.
+Inoltre, tutti e sei i predicati di confronto menzionati precedentemente sono definiti: \code{equals} e \code{<} perch\'e appaiono direttamente nella definizione della classe \code{Date} e gli altri perch\'e sono ereditati dal trait \code{Ord}.
+
+I trait sono utili in molte situazioni pi\`u interessanti di quella qui mostrata, naturalmente, ma la discussione delle loro applicazioni \`e fuori dallo scopo di questo documento.

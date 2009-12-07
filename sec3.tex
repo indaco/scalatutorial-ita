@@ -1,0 +1,40 @@
+\section{Interazione con Java}
+\label{sec:inter-with-java}
+
+Uno dei punti di forza di \Scala \`e quello di rendere semplice l'interazione con codice \Java. Tutte le classi del package \code{java.lang} vengono importate di default, mentre altre richiedono l'esplicito import.
+
+Osserviamo un esempio che lo dimostra. Vogliamo ottenere la data corrente e formattarla in accordo con la convezione usata in uno specifico paese del mondo, diciamo la Francia. %\footnote{Altre zone di lingua francese della Svizzera usano le stesse convenzioni}
+
+Le librerie delle classi \Java definiscono potenti classi di utilit\`a  , come \code{Date} e 
+\newline 
+\code{DateFormat}. Poich\'e \Scala interagisce direttamente con \Java, non esistono le classi equivalenti nella libreria delle classi \Scala -- possiamo semplicemente importare le classi dei corrispondenti package \Java:
+\begin{lstlisting}
+import java.util.{Date, Locale}
+import java.text.DateFormat
+import java.text.DateFormat._
+
+object FrenchDate {
+  def main(args: Array[String]) {
+    val now = new Date
+    val df = getDateInstance(LONG, Locale.FRANCE)
+    println(df format now)
+  }
+}
+\end{lstlisting}
+L'istruzione import di \Scala \`e molto simile all'equivalente in \Java, tuttavia, risulta essere pi\`u potente. Pi\`u classi possono essere importate dallo stesso package includendole in parentesi graffe, come nella prima linea di codice precedentemente riportato. Un'altra differenza \`e evidente nell'uso del carattere underscore (\code{_}) al posto dell'asterisco (\code{*}) per importare tutti i nomi di un package o di una classe. Questo perch\'e l'asterisco \`e un identificatore \Scala valido (e.g. nome di un metodo), come vedremo pi\`u avanti.
+
+L'istruzione import sulla terza linea inoltre importa tutti i membri della classe 
+\newline
+\code{DateFormat}. Questo rende disponibili il metodo statico \code{getDateInstance} ed il campo statico \code{LONG}.
+
+All'interno del metodo \code{main} creiamo un'istanza della classe \code{Date} di \Java che di default contiene la data corrente. Successivamente definiamo il formato della data usando il metodo statico \code{getDateInstance} importato precedentemente. Infine, stampiamo la data corrente formattata in accordo con l'istanza di localizzazione \code{DateFormat}; quest'ultima linea mostra un'importante propriet\`a   di \Scala. I metodi che prendono un argomento possono essere usati con una sintassi non fissa. Questa forma dell'espressione
+\begin{lstlisting}
+df format now
+\end{lstlisting}
+\`e solo un altro modo meno esteso di scriverla come
+\begin{lstlisting}
+df.format(now)
+\end{lstlisting}
+Apparentemente sembra un piccolo dettaglio sintattico, ma presenta delle importanti conseguenze, una delle quali verr\`a   esplorata nella prossima sezione.
+
+A questo punto, riguardo l'integrazione con \Java, abbiamo notato che \`e altres\`i possibile ereditare dalle classi \Java ed implementare le interfacce \Java direttamente in \Scala.

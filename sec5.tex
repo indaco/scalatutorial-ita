@@ -1,0 +1,52 @@
+\section{Classi}
+\label{sec:classes}
+
+Come visto precedentemente \Scala \`e un linguaggio orientato agli oggetti e come tale presenta il concetto di classe. 
+%%\footnote{Per completezza diciamo che alcuni linguaggi object-oriented non hanno il concetto di classe, \Scala %%non appartiene a tale insieme}. 
+Le classi in \Scala sono dichiarate usando una sintassi molto simile a quella adoperata in \Java. Una importante differenza \`e che le classi in \Scala possono avere dei parametri. Cos\`i come illustrato nella seguente definizione dei numeri complessi.
+\begin{lstlisting}
+class Complex(real: Double, imaginary: Double) {
+  def re() = real
+  def im() = imaginary
+}
+\end{lstlisting}
+Il costruttore prende due argomenti che sono la parte immaginaria e reale del complesso. Questi possono esser passati quando si crea una istanza della classe \code{Complex}, come segue: \code{new Complex(1.5, 2.3)}. La classe presenta due metodi, \code{re} ed \code{im}, che danno l'accesso rispettivamente alla parte reale e a quella immaginaria del numero complesso.
+
+Si nota che il tipo di ritorno dei due metodi non \`e specificato. Sar\`a  il compilatore che lo dedurr\`a  automaticamente osservando la parte a destra del segno uguale dei metodi e deducendo che per entrambi si tratta di valori di tipo \code{Double}.
+
+Il compilatore non \`e sempre capace di dedurre i tipi; purtroppo non c'\`e una regola semplice capace di dirci quando sar\`a   in grado e quando no. Nella pratica questo non \`e un problema poich\'e il compilatore sa quando non \`e in grado di stabilire il tipo che non \`e stato definito esplicitamente. I programmatori Scala alle prime armi dovrebbero provare ad omettere la dichiarazione di tipi che sembrano semplici da dedurre per osservare il comportamento del compilatore. Dopo qualche tempo il programmatore avr\`a la sensazione di quando \`e possibile omettere il tipo e quando no.
+
+\subsection{Metodi senza argomenti}
+\label{sec:meth-wo-args}
+
+\`E solo il caso di evidenziare come per invocare \code{re} ed \code{im} sia necessario far seguire il nome del metodo da una coppia di parentesi tonde vuote cos\`i come di seguito indicato:
+\begin{lstlisting}[escapechar=\#]
+object ComplexNumbers {
+  def main(args: Array[String]) {
+    val c = new Complex(1.2, 3.4)
+    println("imaginary part: " + c.im())
+  }
+}
+\end{lstlisting}
+Riuscire ad accedere alla parte reale ed immaginaria come se fossero campi senza dover scrivere anche la coppia vuota di parentesi,  \`e perfettamente fattibile in \Scala, semplicemente definendo i relativi metodi \emph{senza argomenti}. Tali metodi differiscono da quelli con zero argomenti perch\'e non presentano la coppia di parentesi dopo il nome n\`e nella loro definizione, n\`e nel loro utilizzo. La nostra classe \code{Complex} pu\`o essere riscritta come segue:
+\begin{lstlisting}
+class Complex(real: Double, imaginary: Double) {
+  def re = real
+  def im = imaginary
+}
+\end{lstlisting}
+	
+\subsection{Eredit\`a   e overriding}
+\label{sec:inheritance}
+
+In \Scala tutte le classi sono figlie di una super-classe. Quando nessuna super-classe viene specificata, come nell'esempio della classe \code{Complex}, \code{scala.AnyRef} \`e implicitamente usata.
+
+In \Scala \`e possibile eseguire l'override dei metodi ereditati dalla super-classe. E' quindi necessario specificare esplicitamente il metodo che si sta overridando usando il modificatore \code{override}, al fine di evitare override accidentali. Come esempio estendiamo la nostra classe \code{Complex} ridefinendo il metodo \code{toString} ereditato da \code{Object}.
+\begin{lstlisting}
+class Complex(real: Double, imaginary: Double) {
+  def re = real
+  def im = imaginary
+  override def toString() =
+    "" + re + (if (im < 0) "" else "+") + im + "i"
+}
+\end{lstlisting}

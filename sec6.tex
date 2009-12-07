@@ -1,0 +1,97 @@
+\section{Case class e pattern matching}
+\label{sec:case-classes-pattern}
+
+Un tipo di struttura dati che spesso si trova nei programmi \`e l'albero. Ad esempio, gli interpreti ed i compilatori abitualmente rappresentano i programmi internamente come alberi. I documenti XML sono alberi e diversi tipi di contenitori sono basati sugli alberi, come gli alberi red-black.
+
+Esamineremo ora come gli alberi sono rappresentati e manipolati in \Scala attraverso un semplice programma calcolatrice. Lo scopo del programma \`e manipolare espressioni aritmetiche molto semplici composte da somme, costanti intere e variabili intere. Due esempi di tali espressioni sono $1+2$ e $(x+x)+(7+y)$.
+
+A questo punto \`e necessario definire il tipo di rappresentazione per dette espressioni e, a tale proposito, l'albero \`e la pi\`u naturale, dove i nodi sono le operazioni (nel nostro caso, l'addizione) e le foglie sono i valori (costanti o variabili).
+
+In \Java questo albero \`e abitualmente rappresentato usando una super-classe astratta per gli alberi e una concreta sotto-classe per i nodi o le foglie. In un linguaggio funzionale useremmo un tipo dati algebrico per lo stesso scopo. \Scala fornisce il concetto di \code{case class} che \`e qualcosa che si trova nel mezzo delle due rappresentazioni. Mostriamo come pu\`o essere usato per definire il tipo di alberi per il nostro esempio:
+\begin{lstlisting}
+abstract class Tree
+case class Sum(l: Tree, r: Tree) extends Tree
+case class Var(n: String) extends Tree
+case class Const(v: Int) extends Tree
+\end{lstlisting}	
+Il fatto che le classi \code{Sum}, \code{Var} e \code{Const} sono dichiarate come classi \code{case} significa che rispetto alle classi standard differiscono in diversi aspetti:
+\begin{itemize}
+	\item la parola chiave \code{new} non \`e necessaria per creare un'istanza di queste classi (i.e si pu\`o scrivere \code{Const(5)} invece di \code{new Const(5)}),
+	\item le funzioni getter sono automaticamente definite per i parametri del costruttore (i.e. \`e possibile ricavare il valore del parametro costruttore v di qualche istanza \code{c} della classe \code{Const} semplicemente scrivendo \code{c.v}),
+	\item sono disponibili le definizioni di default dei metodi \code{equals} e \code{hashCode}, che lavorano sulle strutture delle istanze e non sulle loro identit\`a, 
+	\item \`e disponibile la definizione di default del metodo \code{toString}, che stampa il valore in ``source form'' (e.g. l'albero per l'espressione $x+1$ stampa \newline \code{Sum(Var(x), Const(1))}),
+	\item le istanze di queste classi possono essere decomposte con il \emph{pattern matching} come vedremo pi\`u avanti.
+\end{itemize}
+Ora che abbiamo definito il tipo dati per rappresentare le nostre espressioni aritmetiche possiamo iniziare a definire le operazioni per manipolarle. Iniziamo con una funzione per valutare l'espressione in un qualche ambiente di valutazione (environment). Lo scopo dell'environment \`e quello di dare i valori alle variabili. Per esempio, l'espressione $x+1$ valutata nell'environment con associato il valore $5$ alla variabile x, scritto \{$x\rightarrow 5$\}, restituisce $6$ come risultato.
+
+Inoltre dobbiamo trovare un modo per rappresentare gli environment. Potremmo naturalmente usare alcune strutture dati associative come una hash table, ma possiamo anche usare direttamente delle funzioni! Un environment in realt\`a   non \`e altro che una funzione con associato un valore al nome di una variabile. L'environment \{$x\rightarrow 5$\} mostrato sopra pu\`o essere semplicemente scritto in \Scala come:
+\begin{lstlisting}
+  { case "x" => 5 }
+\end{lstlisting}
+Questa notazione definisce una funzione che quando riceve la stringa \code{x} come argomento restituisce l'intero 5 e fallisce con un'eccezione negli altri casi.
+
+Prima di scrivere la funzione di valutazione diamo un nome al tipo di environment. Potremmo usare sempre il tipo \code{String => Int} per gli environment, ma semplifichiamo il programma se introduciamo un nome per questo tipo rendendo anche i cambiamenti futuri pi\`u facili. Questo \`e fatto in \Scala con la seguente notazione:
+\begin{lstlisting}
+  type Environment = String => Int
+\end{lstlisting}
+Da ora in avanti il tipo \code{Environment} pu\`o essere usato come un alias per il tipo delle funzioni da \code{String} ad \code {Int}.
+
+Possiamo ora passare alla definizione della funzione di valutazione. Concettualmente \`e molto semplice: il valore della somma di due espressioni \`e pari alla somma dei valori delle loro espressioni; il valore di una variabile \`e ottenuto direttamente dall'environment; il valore di una costante \`e la costante stessa. Esprimere quanto appena detto in \Scala non \`e difficile:
+\begin{lstlisting}
+  def eval(t: Tree, env: Environment): Int = t match {
+    case Sum(l, r) => eval(l, env) + eval(r, env)
+    case Var(n)    => env(n)
+    case Const(v)  => v
+  }
+\end{lstlisting}
+Questa funzione di valutazione lavora effettuando un \emph{pattern matching} sull'albero. Intuitivamente il significato della definizione precendente dovrebbe esser chiaro:
+\begin{enumerate}
+	\item prima controlla se l'albero \code{t} \`e un \code{Sum}; se lo \`e, esegue il bind del sottoalbero sinistro con una nuova variabile chiamata \code{l} ed il sotto albero destro con una variabile chiamata \code{r} e procede con la valutazione dell'espressione che segue la freccia; questa espressione pu\`o far uso delle variabili marcate dal pattern che appaiono alla sinistra della freccia, i.e. \code{l} e \code{r};
+	\item se il primo controllo non \`e andato a buon fine, cio\`e l'albero non \`e un \code{Sum}, va avanti e controlla se \`e un \code{Var}; se lo \`e, esegue il bind del nome contenuto nel nodo \code{Var} con una variabile \code{n} e procede con la valutazione dell'espressione sulla destra;
+	\item se anche il secondo controllo fallisce e quindi non si tratta n\`e si un \code{Sum} n\`e di un \code{Var}, controlla se si tratta di un \code{Const} e se lo \`e, combina il valore contenuto nel nodo \code{Const} con una variabile \code{v} e procede con la valutazione dell'espressione sulla destra;
+	\item infine, se tutti i controlli falliscono, viene sollevata un'eccezione per segnalare il fallimento del pattern matching dell'espressione; questo caso pu\`o accadere qui solo se si dichiarasse almeno una sotto classe di \code{Tree}.
+\end{enumerate}
+L'idea alla base del pattern matching \`e quella di eseguire il match di un valore con una serie di pattern e se il match viene trovato, estrarre e nominare varie parti del valore per valutare il codice che ne fa uso.
+
+Un programmatore object-oriented esperto potrebbe sorprendersi del fatto che non abbiamo definito \code{eval} come metodo della classe \code{Tree} e delle sue sottoclassi. Potremmo averlo fatto, perch\`e \Scala permette la definizione di metodi nelle classi case cos\`i come nelle classi normali. Decidere quando usare il pattern matching o i metodi \`e quindi  una questione di gusti, ma ha anche implicazioni importanti riguardo l'estensibilit\`a:
+\begin{itemize}
+	\item quando si usano i metodi, \`e facile aggiungere un nuovo tipo di nodo definendo una sotto classe di \code{Tree} per esso; d'altro canto, aggiungere una nuova operazione per manipolare l'albero \`e noioso, richiede la modifica di tutte le sotto classi;
+	\item quando si usa il pattern matching, la situazione \`e ribaltata: aggiungere un nuovo tipo di nodo richiede la modifica di tutte le funzioni in cui si fa pattern matching sull'albero, per prendere in esame il nuovo nodo; d'altro canto, aggiungere una nuova operazione \`e semplice, basta definirla come una funzione indipendente.
+\end{itemize}
+Per esplorare il pattern matching ulteriormente, definiamo un'altra operazione sulle espressioni aritmetiche: la derivazione simbolica. \`E necessario ricordare le seguenti regole che riguardano questa operazione:
+\begin{enumerate}
+	\item la derivata di una somma \`e la somma delle derivate,
+	\item la derivata di una variabile \code{v} \`e uno se \code{v} \`e la variabile di derivazione, zero altrimenti,
+	\item la derivata di una costante \`e zero.
+\end{enumerate}
+Queste regole possono essere tradotte quasi letteralmente in codice \Scala, per ottenere la seguente definizione:
+\begin{lstlisting}
+  def derive(t: Tree, v: String): Tree = t match {
+    case Sum(l, r) => Sum(derive(l, v), derive(r, v))
+    case Var(n) if (v == n) => Const(1)
+    case _ => Const(0)
+  }
+\end{lstlisting}
+Questa funzione introduce due nuovi concetti relativi al pattern matching. Prima di tutto l'istruzione \code{case} per le variabili ha un \emph{controllo}, un'espressione che segue la parola chiave \code{if}. Questo controllo fa si che il pattern matching \`e eseguito solo se l'espressione \`e vera. Qui viene usato per esser sicuri che restituiamo la costante 1 solo se il nome della variabile da derivare \`e lo stesso della variabile di derivazione \code{v}. La seconda nuova feature del pattern matching qui introdotta \`e la \emph{wild-card}, scritta \code{_}, che  corrisponde a qualunque valore, senza denominarlo.
+
+Non abbiamo esplorato del tutto la potenza del pattern matching, ma ci fermiamo qui per brevit\`a. Vogliamo ancora osservare come le due precedenti funzioni lavorano in un esempio reale. A tale scopo, scriviamo una semplice funzione \code{main} che esegue diverse operazioni sull'espressione $(x+x)+(7+y)$: prima calcola il suo valore nell'environment $\{x\rightarrow 5, y\rightarrow 7\}$, dopo calcola la derivata relativa a $x$ e poi ad $y$.
+\begin{lstlisting}
+  def main(args: Array[String]) {
+    val exp: Tree = Sum(Sum(Var("x"),Var("x")),Sum(Const(7),Var("y")))
+    val env: Environment = { case "x" => 5 case "y" => 7 }
+    println("Expression: " + exp)
+    println("Evaluation with x=5, y=7: " + eval(exp, env))
+    println("Derivative relative to x:\n " + derive(exp, "x"))
+    println("Derivative relative to y:\n " + derive(exp, "y"))
+  }
+\end{lstlisting}
+Eseguendo questo programma, otteniamo l'output atteso:
+\begin{verbatim}
+Expression: Sum(Sum(Var(x),Var(x)),Sum(Const(7),Var(y)))
+Evaluation with x=5, y=7: 24
+Derivative relative a x:
+ Sum(Sum(Const(1),Const(1)),Sum(Const(0),Const(0)))
+Derivative relative to y:
+ Sum(Sum(Const(0),Const(0)),Sum(Const(0),Const(1)))
+\end{verbatim}
+Esaminando l'output, notiamo che il risultato della derivata dovrebbe essere semplificato prima di essere visualizzato all'utente. La definizione di una funzione di semplificazione usando il pattern matching rappresenta un interessante problema (ma sorprendentemente ingannevole) che lasciamo come esercizio per il lettore.

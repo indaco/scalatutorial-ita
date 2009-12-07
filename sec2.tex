@@ -1,0 +1,40 @@
+\section{Un primo esempio}
+\label{sec:first-example}
+
+Come primo esempio, useremo lo standard \emph{Hello world}. Non \`e sicuramente un esempio entusiasmante ma rende facile dimostrare l'uso dei tool di \Scala senza richiedere troppe conoscenze del linguaggio stesso. 
+Ecco il codice:
+\begin{lstlisting}
+object HelloWorld {
+  def main(args: Array[String]) {
+    println("Hello, world!")
+  }
+}
+\end{lstlisting}
+La struttura del programma \`e sicuramente familiare ai programmatori \Java; 
+c'\`e un metodo chiamato \code{main} che accetta ed usa gli argomenti, un array di stringhe, forniti da linea di comando. Il corpo del metodo consiste di una singola chiamata al predefinito \code{println} che riceve il nostro amichevole saluto come parametro. Il codice del main non ritorna alcun valore, quindi non \`e necessario dichiararne uno di ritorno.
+
+Ci\`o che \`e meno familiare ai programmatori Java \`e la dichiarazione di \code{object} contenente il metodo \code{main}. Questa dichiarazione introduce ci\`o che \`e comunemente chiamato \emph{oggetto singleton}, cio\`e una classe con una unica istanza. La dichiarazione precedente infatti crea sia la classe \code{HelloWorld} che una istanza di essa, chiamata \code{HelloWorld}. L'istanza \`e creata, su richiesta, la prima volta che viene usata.
+
+Il lettore astuto avr\`a notato che il metodo \code{main} non \`e stato dichiarato come \code{static}, questo perch\'e  i membri (metodi o campi) statici non esistono in \Scala. Invece che definire membri statici, il programmatore \Scala li dichiara in oggetti singleton.
+
+\subsection{Compiliamo l'esempio}
+\label{sec:compiling-example}
+
+Per compilare l'esempio, useremo \scalac, cio\`e il compilatore \Scala. \scalac lavora come la maggior parte dei compilatori: un file sorgente come argomento, alcune opzioni e la produzione di uno o diversi object file come output. Gli object file sono gli standard class file di \Java.
+
+Se salviamo il file precedente come \code{HelloWorld.scala}, lo compiliamo con il seguente comando (il segno maggiore `\verb|>|' rappresenta il prompt dei comandi e non va digitato):
+\begin{verbatim}
+> scalac HelloWorld.scala
+\end{verbatim}
+Questo generer\`a  qualche class file nella directory corrente. Uno di questi sar\`a  chiamato \code{HelloWorld.class} e contiene  una classe che pu\`o essere direttamente eseguita usando il comando \scala come mostra la seguente sezione.
+
+\subsection{Eseguiamo l'esempio}
+\label{sec:running-example}
+
+Una volta compilato il programma pu\`o esser facilmente eseguito con il comando \scala. L'uso \`e molto simile al comando \java ed accetta le stesse opzioni. Il precedente esempio pu\`o esser eseguito usando il seguente comando, che produce l'output atteso:
+\begin{verbatim}
+> scala -classpath . HelloWorld
+\end{verbatim}
+\begin{verbatim}
+Hello, world!
+\end{verbatim}

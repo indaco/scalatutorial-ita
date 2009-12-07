@@ -1,0 +1,33 @@
+\section{Programmazione Generica}
+\label{sec:genericity}
+
+L'ultima caratteristica di \Scala che esploreremo in questo tutorial \`e la programmazione generica. Gli sviluppatori \Java dovrebbero essere bene informati dei problemi relativi alla mancanza della programmazione generica nel loro linguaggio, un'imperfezione risolta in \Java 1.5.
+
+La programmazione generica riguarda la capacit\`a   di scrivere codice parametrizzato dai tipi.  Per esempio, un programmatore che scrive una libreria per le liste concatenate pu\`o incontrare il problema di decidere quale tipo dare agli elementi della lista. Dato che questa lista \`e stata concepita per essere usata in contesti differenti, non \`e possibile decidere  che il tipo degli elementi deve essere, per esempio, Int. Questo potrebbe essere completamente arbitrario ed eccessivamente restrittivo.
+
+Gli sviluppatori \Java hanno fatto ricorso all'uso di \code{Object}, che \`e il super-tipo di tutti gli oggetti. Questa soluzione \`e in ogni caso ben lontana dall'esser ideale, poich\'e non funziona per i tipi base (\code{int}, \code{long}, \code{float}, etc.) ed implica che molto type casts dinamico deve esser fatto dal programmatore.
+
+\Scala rende possibile la definizione delle classi generiche (e metodi) per risolvere tale problema. Esaminiamo ci\`o con un esempio del pi\`u semplice container di classe possibile: un riferimento, che pu\`o essere o vuoto o un puntamento ad un oggetto di qualche tipo.
+\begin{lstlisting}
+class Reference[T] {
+  private var contents: T = _
+
+  def set(value: T) { contents = value }
+  def get: T = contents
+}
+\end{lstlisting}
+La classe \code{Reference} \`e parametrizzata da un tipo, chiamato \code{T}, che \`e il tipo del suo elemento. Questo tipo \`e usato nel corpo della classe come il tipo della variabile \code{contents}, l'argomento del metodo \code{set}, ed il tipo restituito dal metodo \code{get}.
+
+Il precedente codice d'esempio introduce le variabili in \Scala che non dovrebbero richiedere ulteriori spiegazioni. E' tuttavia interessante notare che il valore iniziale dato a quella variabile \`e \code{_}, che rappresenta un valore di default. Questo valore di default \`e 0 per i tipi numerici, \code{false} per il tipo \code{Boolean}, \code{()} per il tipo \code{Unit} e \code{null} per tutti i tipi oggetto.
+
+Per usare la classe \code{Reference}, \`e necessario specificare quale tipo usare per il tipo parametro \code{T}, che \`e il tipo di elemento contenuto dalla cella. Per esempio, per creare ed usare una cella che contiene un intero, si potrebbe scrivere il seguente codice:
+\begin{lstlisting}
+object IntegerReference {
+  def main(args: Array[String]) {
+    val cell = new Reference[Int]
+    cell.set(13)
+    println("Reference contains the half of " + (cell.get * 2))
+  }
+}
+\end{lstlisting}
+Come si pu\`o vedere in questo esempio non \`e necessario fare il \emph{cast} del tipo ritornato dal metodo \code{get} prima di usarlo come intero. Non risulta possibile memorizzare niente di diverso da un intero nella varibile \code{cell}, poich\'e \`e stata dichiarata per memorizzare un intero.
