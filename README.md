@@ -1,5 +1,5 @@
-# Italian translation for "Brief Scala Tutorial" from Scala main site
+### Italian translation for "Brief Scala Tutorial" from Scala main site
 
-## http://scala-lang.org -> documentation -> manuals -> translations
+http://scala-lang.org -> documentation -> manuals -> translations
 
-### published at: August 2009
+published at: August 2009
